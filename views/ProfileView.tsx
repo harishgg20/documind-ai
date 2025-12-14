@@ -1,0 +1,340 @@
+import React, { useState, useRef } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
+import { Camera, User, Mail, Save, Loader2, Shield, Download, Lock, Check } from 'lucide-react';
+import { jsPDF } from "jspdf";
+
+export const ProfileView: React.FC = () => {
+  const { user, updateProfile, resetPassword } = useAuth();
+  const { showToast } = useToast();
+  const [name, setName] = useState(user?.name || '');
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Image too large. Please select an image under 2MB.");
+        return;
+      }
+      setIsLoading(true);
+      try {
+        await updateProfile(undefined, file);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    
+    setIsLoading(true);
+    try {
+      await updateProfile(name);
+      setIsEditing(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDownloadData = () => {
+    if (!user) return;
+    
+    try {
+        const doc = new jsPDF();
+        const authLogs = JSON.parse(localStorage.getItem('documind_auth_logs') || '[]');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const userLogs = authLogs.filter((l: any) => l.email === user.email);
+
+        // Header
+        doc.setFontSize(22);
+        doc.setTextColor(11, 87, 208); // Google Blue
+        doc.text("DocuMind AI", 20, 25);
+        
+        doc.setFontSize(14);
+        doc.setTextColor(100);
+        doc.text("Personal Data Export", 20, 35);
+        doc.setDrawColor(200);
+        doc.line(20, 40, 190, 40); // Horizontal line
+
+        // User Details
+        doc.setFontSize(16);
+        doc.setTextColor(31, 31, 31);
+        doc.text("User Profile", 20, 55);
+        
+        doc.setFontSize(11);
+        doc.setTextColor(68, 71, 70);
+        let yDetails = 65;
+        const lineHeight = 8;
+        
+        doc.text(`Name:`, 20, yDetails);
+        doc.setFont("helvetica", "bold");
+        doc.text(user.name, 60, yDetails);
+        doc.setFont("helvetica", "normal");
+        yDetails += lineHeight;
+
+        doc.text(`Email:`, 20, yDetails);
+        doc.setFont("helvetica", "bold");
+        doc.text(user.email, 60, yDetails);
+        doc.setFont("helvetica", "normal");
+        yDetails += lineHeight;
+
+        doc.text(`User ID:`, 20, yDetails);
+        doc.text(user.id, 60, yDetails);
+        yDetails += lineHeight;
+
+        doc.text(`Role:`, 20, yDetails);
+        doc.text(user.role, 60, yDetails);
+        yDetails += lineHeight;
+
+        doc.text(`Export Date:`, 20, yDetails);
+        doc.text(new Date().toLocaleString(), 60, yDetails);
+        yDetails += 15;
+
+        // Activity Logs
+        doc.setFontSize(16);
+        doc.setTextColor(31, 31, 31);
+        doc.text("Recent Activity", 20, yDetails);
+        yDetails += 10;
+        
+        // Table Header
+        doc.setFillColor(240, 244, 249);
+        doc.rect(20, yDetails - 6, 170, 10, 'F');
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(31, 31, 31);
+        doc.text("Date & Time", 25, yDetails);
+        doc.text("Action", 90, yDetails);
+        doc.text("Details", 140, yDetails);
+        doc.setFont("helvetica", "normal");
+        yDetails += 10;
+
+        // Table Rows
+        doc.setFontSize(10);
+        doc.setTextColor(68, 71, 70);
+        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        userLogs.slice(0, 20).forEach((log: any) => {
+            if (yDetails > 270) {
+                doc.addPage();
+                yDetails = 20;
+            }
+            doc.text(new Date(log.timestamp).toLocaleString(), 25, yDetails);
+            doc.text(log.action, 90, yDetails);
+            // Truncate email/details if too long
+            const detailText = log.email.length > 25 ? log.email.substring(0, 22) + '...' : log.email;
+            doc.text(detailText, 140, yDetails);
+            
+            // Light separator line
+            doc.setDrawColor(240);
+            doc.line(20, yDetails + 2, 190, yDetails + 2);
+            
+            yDetails += 10;
+        });
+        
+        if (userLogs.length === 0) {
+            doc.text("No activity logs found.", 25, yDetails);
+        }
+
+        // Footer
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text("Generated by DocuMind AI Security System", 105, 290, { align: 'center' });
+
+        doc.save(`documind_data_${user.id}.pdf`);
+
+        showToast('Data Exported', 'Your account data has been downloaded as PDF.', 'success');
+    } catch (e) {
+        console.error("Export failed", e);
+        showToast('Export Failed', 'Could not generate PDF export.', 'error');
+    }
+  };
+
+  const handleChangePassword = async () => {
+      if (!user?.email) return;
+      
+      setIsResettingPassword(true);
+      try {
+          await resetPassword(user.email);
+          // Toast is handled in resetPassword, but we can add specific UI feedback here if needed
+      } catch (e) {
+          console.error(e);
+      } finally {
+          setIsResettingPassword(false);
+      }
+  };
+
+  if (!user) return null;
+
+  return (
+    <div className="flex-1 p-8 overflow-y-auto bg-white h-full relative font-sans">
+      <div className="max-w-2xl mx-auto space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+        
+        {/* Header */}
+        <div>
+           <h1 className="text-3xl font-normal text-[#1f1f1f] mb-2">Account Settings</h1>
+           <p className="text-[#444746]">Manage your profile details and preferences.</p>
+        </div>
+
+        {/* Profile Card */}
+        <div className="bg-white rounded-[24px] border border-[#e1e3e1] shadow-sm overflow-hidden">
+           <div className="h-32 bg-gradient-to-r from-[#c2e7ff] to-[#e8f0fe] relative">
+              <div className="absolute -bottom-12 left-8">
+                 <div className="relative group">
+                    <div className="w-24 h-24 rounded-full border-4 border-white bg-white shadow-md overflow-hidden flex items-center justify-center text-3xl font-medium text-[#001d35] select-none">
+                       {user.avatarUrl ? (
+                          <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+                       ) : (
+                          user.name.charAt(0).toUpperCase()
+                       )}
+                    </div>
+                    
+                    <button 
+                       onClick={() => fileInputRef.current?.click()}
+                       disabled={isLoading}
+                       className="absolute bottom-0 right-0 p-2 bg-google-blue text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors disabled:opacity-70"
+                       title="Change Avatar"
+                    >
+                       {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                    </button>
+                    <input 
+                       type="file" 
+                       ref={fileInputRef} 
+                       className="hidden" 
+                       accept="image/*"
+                       onChange={handleFileChange}
+                    />
+                 </div>
+              </div>
+           </div>
+
+           <div className="pt-16 px-8 pb-8">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                 
+                 {/* Name Field */}
+                 <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#444746] flex items-center gap-2">
+                       <User className="w-4 h-4" />
+                       Full Name
+                    </label>
+                    <div className="relative">
+                       <input 
+                          type="text" 
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          disabled={!isEditing || isLoading}
+                          className={`w-full px-4 py-3 rounded-xl border ${isEditing ? 'border-google-blue bg-white ring-4 ring-blue-50' : 'border-[#e1e3e1] bg-[#f8f9fa] text-[#444746]'} focus:outline-none transition-all`}
+                       />
+                       {!isEditing && (
+                          <button 
+                             type="button"
+                             onClick={() => setIsEditing(true)}
+                             className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-google-blue font-medium hover:underline"
+                          >
+                             Edit
+                          </button>
+                       )}
+                    </div>
+                 </div>
+
+                 {/* Email Field (Read Only) */}
+                 <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#444746] flex items-center gap-2">
+                       <Mail className="w-4 h-4" />
+                       Email Address
+                    </label>
+                    <input 
+                       type="email" 
+                       value={user.email}
+                       disabled
+                       className="w-full px-4 py-3 rounded-xl border border-[#e1e3e1] bg-[#f8f9fa] text-[#444746] opacity-70 cursor-not-allowed"
+                    />
+                    <p className="text-xs text-[#444746] ml-1">Email address cannot be changed for security reasons.</p>
+                 </div>
+
+                 {/* Role Badge */}
+                 <div className="pt-2">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                       user.role === 'ADMIN' ? 'bg-[#f3e8fd] text-[#6e24b7]' : 'bg-[#e6f4ea] text-[#137333]'
+                    }`}>
+                       <Shield className="w-3 h-3" />
+                       {user.role} Account
+                    </span>
+                 </div>
+
+                 {/* Action Buttons */}
+                 {isEditing && (
+                    <div className="flex gap-3 pt-4 animate-in fade-in slide-in-from-top-2">
+                       <button 
+                          type="submit" 
+                          disabled={isLoading}
+                          className="flex items-center gap-2 px-6 py-2.5 bg-google-blue text-white font-medium rounded-full hover:bg-blue-600 transition-colors shadow-sm disabled:opacity-70"
+                       >
+                          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                          Save Changes
+                       </button>
+                       <button 
+                          type="button" 
+                          onClick={() => {
+                             setIsEditing(false);
+                             setName(user.name);
+                          }}
+                          disabled={isLoading}
+                          className="px-6 py-2.5 text-[#444746] font-medium rounded-full hover:bg-[#f0f4f9] transition-colors"
+                       >
+                          Cancel
+                       </button>
+                    </div>
+                 )}
+
+              </form>
+           </div>
+        </div>
+        
+        {/* Additional Info Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="p-6 bg-[#f8f9fa] rounded-2xl border border-[#e1e3e1] hover:shadow-sm transition-shadow">
+                <div className="w-10 h-10 bg-[#e8f0fe] rounded-full flex items-center justify-center text-google-blue mb-3">
+                    <Download className="w-5 h-5" />
+                </div>
+                <h3 className="font-medium text-[#1f1f1f] mb-2">Privacy & Data</h3>
+                <p className="text-sm text-[#444746] mb-4 min-h-[40px]">Download a copy of your personal data and activity logs stored in DocuMind (PDF).</p>
+                <button 
+                    onClick={handleDownloadData}
+                    className="text-google-blue text-sm font-medium hover:underline flex items-center gap-1"
+                >
+                    Download my data
+                </button>
+             </div>
+             
+             <div className="p-6 bg-[#f8f9fa] rounded-2xl border border-[#e1e3e1] hover:shadow-sm transition-shadow">
+                <div className="w-10 h-10 bg-[#fce8e6] rounded-full flex items-center justify-center text-google-red mb-3">
+                    <Lock className="w-5 h-5" />
+                </div>
+                <h3 className="font-medium text-[#1f1f1f] mb-2">Security</h3>
+                <p className="text-sm text-[#444746] mb-4 min-h-[40px]">Protect your account. Send a secure link to your email to reset your password.</p>
+                <button 
+                    onClick={handleChangePassword}
+                    disabled={isResettingPassword}
+                    className="text-google-blue text-sm font-medium hover:underline flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {isResettingPassword ? (
+                        <>
+                            <Loader2 className="w-3 h-3 animate-spin" /> Sending...
+                        </>
+                    ) : (
+                        "Change Password"
+                    )}
+                </button>
+             </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};

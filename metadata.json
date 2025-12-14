@@ -1,0 +1,7 @@
+{
+  "name": "documind-ai",
+  "description": "Enterprise-grade document intelligence platform powered by Google Gemini 2.5. Features multimodal analysis (PDF, Video, Image), strict citation grounding, deep thinking mode, and voice interaction.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
