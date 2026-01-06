@@ -1,82 +1,91 @@
-📘 DocuMind-AI
+Harish Gouda - Portfolio Website 🚀
 
-**Enterprise-grade document intelligence platform powered by Google Gemini 2.5.**  
-DocuMind-AI enables deep document understanding with multimodal support — PDF, Image, Video, and Text — along with strict citation grounding, deep-thinking responses, and voice-based interaction.
+Welcome to the source code of my personal portfolio website. This project is a modern, responsive, and interactive showcase of my work as a FullStack Developer and Data Analyst.
 
----
+It features a dark-mode aesthetic with neon accents, live GitHub integration, and a clean user experience across all devices.
 
-## 🚀 Features
+🌟 Key Features
 
-- 📄 **Multimodal Document Support**  
-  Upload and analyze PDFs, images, videos, and plain text.
+Responsive Design: Fully adaptable layout that looks great on mobile, tablet, and desktop.
 
-- 🧠 **AI-Powered Understanding**  
-  Uses Google Gemini 2.5 for advanced reasoning and contextual intelligence.
+Interactive UI:
 
-- 💬 **Chat-Based Interface**  
-  Ask questions in natural language and get accurate, contextual answers.
+Typewriter Effect for the hero section titles.
 
-- 🎯 **Citation & Source Grounding**  
-  Every response is grounded with references from the uploaded content.
+Live GitHub Stats: Automatically pulls contribution graph, repository stats, and top languages.
 
-- 🎤 **Voice Interaction**  
-  Supports voice input and spoken AI responses.
+Scroll-to-Top Button: Enhances navigation on long pages.
 
-- 🔍 **Deep Thinking Mode**  
-  Handles complex and multi-step questions with structured reasoning.
+Project Hover Effects: Zoom effects on project cards for a polished feel.
 
----
+Sections Included:
 
-## 🧠 Tech Stack
+About: Professional summary and resume download.
 
-- **Frontend:** React + TypeScript  
-- **Build Tool:** Vite  
-- **AI Model:** Google Gemini 2.5  
-- **Deployment:** AI Studio / Vercel / Netlify  
-- **Styling:** Tailwind CSS / Modern Custom UI  
+Technical Arsenal: Categorized skills in Programming, Frontend, Backend, Databases, and Data Analytics.
 
----
+Professional Attributes: Highlights soft skills like Problem Solving and Communication.
 
-## 📁 Project Structure
+Experience: Timeline of internships at UptoSkills, Deloitte, and 360DigiTMG.
 
-documind-ai/
-├── components/
-├── contexts/
-├── services/
-├── views/
-├── public/
-├── src/
-├── App.tsx
-├── main.tsx
-├── package.json
-├── tsconfig.json
-└── README.md
+Education: Academic background in MCA and Computer Science.
 
-🔄 Application Workflow
+Featured Projects:
 
-Upload document
+AI-CAD-Copilot: AI assistant for CAD workflows (React/TS).
 
-Extract content
+Documind-AI: Intelligent document analysis platform.
 
-Process with Gemini
+Dataview-AI: Full-stack analytics dashboard.
 
-Generate cited response
+TalentID: Freshers career platform (In Progress).
 
-Display via chat UI
+PolicyPal: Government scheme eligibility engine (In Progress).
 
-# Run and deploy your AI Studio app
+Certifications: Badges from IBM, Microsoft, Cisco, and others.
 
-This contains everything you need to run your app locally.
+Contact: Direct links to Email, LinkedIn, and Phone.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1rGYXgl9-hScNDx2m3K9s9-Ulm4JpRSxN
+🛠️ Technologies Used
 
-## Run Locally
+HTML5: Semantic structure.
 
-**Prerequisites:**  Node.js
+CSS3: Custom styling, CSS variables for theming, Flexbox, and Grid layouts.
+
+JavaScript: Logic for the mobile menu, typewriter effect, cache-busting for live stats, and scroll interactions.
+
+Font Awesome: For scalable vector icons.
+
+GitHub APIs: Fetches the profile picture, contribution graph, and user statistics dynamically.
+
+📂 Project Structure
+
+/ (Root Directory)
+│
+├── index.html      # Main HTML file containing structure, styles, and scripts
+└── README.md       # Project documentation (this file)
 
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+🚀 Deployment
+
+The easiest way to deploy this portfolio is using Vercel.
+
+Manual Deployment Steps:
+
+Push to GitHub: Ensure your project is pushed to your GitHub repository (Harish-Portfolio).
+
+Login to Vercel: Go to Vercel.com and log in with GitHub.
+
+Import Project: Click "Add New" > "Project" and select Harish-Portfolio.
+
+Deploy: Click "Deploy". Vercel will automatically detect the static HTML and publish your site instantly.
+
+🤝 Connect with Me
+
+LinkedIn: Harish Gouda
+
+GitHub: Harishgg20
+
+Email: harishgouda52001@gmail.com
+
+Created by Harish Gouda | 2026
